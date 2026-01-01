@@ -1,6 +1,7 @@
 package user
 
 import (
+	"backend-apis/config"
 	"backend-apis/service/auth"
 	"backend-apis/types"
 	"backend-apis/utils"
@@ -91,4 +92,13 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
 		return
 	}
+
+	secret := []byte(config.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, u.ID)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJson(w, http.StatusOK, map[string]string{"token": token})
 }

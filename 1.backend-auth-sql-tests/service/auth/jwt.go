@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"honnef.co/go/tools/config"
 )
 
 func CreateJWT(secret []byte, userID int) (string, error) {
@@ -17,4 +16,12 @@ func CreateJWT(secret []byte, userID int) (string, error) {
 		"userID":    strconv.Itoa(userID),
 		"expiredAt": time.Now().Add(expiration).Unix(),
 	})
+
+	tokenString, err := token.SignedString(secret)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

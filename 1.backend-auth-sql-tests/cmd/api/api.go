@@ -1,6 +1,7 @@
 package api
 
 import (
+	"backend-apis/service/product"
 	"backend-apis/service/user"
 	"database/sql"
 	"log"
@@ -27,6 +28,10 @@ func (s *APIServer) Run() error {
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subrouter)
+
+	productStore := product.NewStore(s.db)
+	productHandler := product.NewHandler(productStore)
+	productHandler.RegisterRoutes(subrouter)
 
 	log.Println("listening on", s.addr)
 
