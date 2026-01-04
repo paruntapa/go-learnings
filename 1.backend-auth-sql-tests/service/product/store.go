@@ -4,6 +4,7 @@ import (
 	"backend-apis/types"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type Store struct {
@@ -30,7 +31,7 @@ func (s *Store) CheckDuplicateProducts(product *types.Product) (*types.Product, 
 	}
 
 	if p.ID != 0 {
-		return p, nil
+		return nil, fmt.Errorf("Product Already Exists")
 	}
 
 	return nil, nil
@@ -61,6 +62,44 @@ func (s *Store) GetProducts() ([]*types.Product, error) {
 		}
 
 		products = append(products, p)
+	}
+
+	return products, nil
+}
+
+func (s *Store) UpdateProduct(product types.Product) error {
+	_, err := s.db.Exec("UPDATE products SET name = ?, description = ?, image = ?, price = ?, quantity = ? WHERE id = ?", product.Name, product.Description, product.Image, product.Price, product.Quantity, product.ID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) GetProductsByIDs(productIDs []int) ([]types.Product, error) {
+	placeholders := strings.Repeat(",?", len(productIDs)-1)
+	query := fmt.Sprintf("SELECT * FROM products WHERE id IN (?%s)", placeholders)
+
+	args := make([]interface{}, len(productIDs))
+	for i, v := range productIDs {
+		args[i] = v
+	}
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	products := []types.Product{}
+
+	for rows.Next() {
+		p, err := scanRowsIntoProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, *p)
+
 	}
 
 	return products, nil

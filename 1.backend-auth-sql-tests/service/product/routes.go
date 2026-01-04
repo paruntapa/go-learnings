@@ -49,12 +49,10 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.store.CheckDuplicateProducts(&payload)
+	_, err := h.store.CheckDuplicateProducts(&payload)
 
-	duplicateProduct := map[string]types.Product{"Product already exists": *p}
-
-	if p.ID != 0 {
-		utils.WriteJson(w, http.StatusUnauthorized, duplicateProduct)
+	if err != nil {
+		utils.WriteError(w, http.StatusNotAcceptable, fmt.Errorf("Product already exists"))
 		return
 	}
 
